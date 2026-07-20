@@ -1,5 +1,11 @@
 <!doctype html>
 <html>
+	<style>
+		.figure-pair { margin: 2em auto; text-align: center; }
+		.figure-pair .imgs { display: flex; gap: 12px; justify-content: center; align-items: center; }
+		.figure-pair img { height: 320px; width: auto; max-width: 49%; object-fit: contain; }
+		.figure-pair figcaption { margin-top: 8px; font-size: 0.9em; color: #555; }
+	  </style>
 	<head>
 		<meta charset="utf-8">
 		<title>Minimal Scaling Laws | Nicholas Carolan</title>
@@ -12,8 +18,26 @@
 	    <h1 style="margin-bottom: -10px;"><a href="https://ncarolan.github.io" class="plain-link">Nicholas Carolan</a></h1>
     	<hr>
 
-	    <h2 style="margin-bottom: -10px;">Minimal Scaling Laws</h2>
+	    <h2 style="margin-bottom: -12px;">Minimal Scaling Laws</h2>
 	    <p>[<a href="https://colab.research.google.com/github/ncarolan/chinchilla/blob/main/chinchilla.ipynb" target="_blank">Colab</a>] [<a href="https://github.com/ncarolan/chinchilla" target="_blank">GitHub</a>]</p>
 	    <p><i>TL;DR: I derive Chinchilla-style transformer scaling laws in a minimal setup using small models (<10M parameters) and synthetic addition data, all trained in a single (free!) NVIDIA T4 Google Colab notebook.</i></p>
-  	</body>
+			  
+		<figure class="figure-pair">
+		<div class="imgs">
+			<img src="assets/chinchilla_figure2.png" alt="Chinchilla loss curves">
+			<img src="assets/minimal_figure2.png" alt="My loss curves">
+		</div>
+		<figcaption>Chinchilla (left) vs My Loss Curves (right)</figcaption>
+		</figure>
+
+		<p>The exponential growth in AI investment, infrastructure, and capability seen over the past half-decade can be extrapolated from the language model scaling laws famously published in <a href="https://arxiv.org/abs/2001.08361">Kaplan et al 2020</a> and refined in <a href="https://arxiv.org/abs/2203.15556">Hoffmann et al 2022</a>. These scaling laws simply describe the empirical relationship between the amount of compute used to train a language model and its performance. The Kaplan paper found that model size (parameters), dataset size, and compute (FLOPs) were the key variables impacting performance as measured by training loss. From their findings, the authors derived scaling laws that reliably predicted a model&rsquo;s loss as a function of its parameter count and the total FLOPs of training compute. These relationships were power laws, meaning a constant-factor reduction in loss required a much larger multiplicative increase in compute/data/parameters. This work found that particular nuances of a transformer&rsquo;s architecture (width, depth, attention heads, etc) were insignificant compared to the necessity of scale &ndash; a <a href="http://www.incompleteideas.net/IncIdeas/BitterLesson.html">bitter lesson</a>. To read more about the history of scaling laws, check out Lilian Weng&rsquo;s excellent <a href="https://lilianweng.github.io/posts/2026-06-24-scaling-laws/">blogpost</a>.</p>
+
+		<p>Subsequent work from Google Deepmind (<a href="https://arxiv.org/abs/2203.15556">Hoffmann et al 2022</a>) refined the exact formulation of the scaling relationship, introducing the so-called &ldquo;Chinchilla&rdquo; scaling laws. They found that due to some methodological issues (explained <a href="https://www.completeskeptic.com/p/scaling-laws-honestly">here</a>) the Kaplan scaling laws overestimated the importance of model size. Instead, the Chinchilla authors determined that the most compute-optimal models should have fewer parameters and more data than previously thought, and that data and parameters should be scaled roughly evenly as models get larger. These Chinchilla scaling laws proved highly influential, although mixture-of-experts models and inference economics have since changed the optimal way to train LLMs.</p>
+		
+		<p>While replicating full scaling law experiments up to the frontier is prohibitively expensive, you can demonstrate scaling laws at home, with some limitations, by simplifying the data regime and scaling down the experiments as done here. In particular, I am roughly following a suggested exercise from Google Deepmind pretraining lead Vlad Feinberg's <a href="https://vladfeinberg.com/2026/05/10/how-to-land-a-job-at-a-frontier-lab.html">blog post</a>:</p>
+		
+		<blockquote>
+		<p>&ldquo;Code a ~10M transformer using only jax, flax, optax in free colab using tpu. Hard code it to accept digits 0-9, space, +, =. Generate a dataset of simple up-to-3-digit numbers, have it learn addition. Should train quickly on T4 GPU (pad examples to fixed length). Derive Chinchilla laws for this; see how they differ for dense vs MoE architectures.&rdquo;</p>
+		</blockquote>
+	</body>
 </html>
