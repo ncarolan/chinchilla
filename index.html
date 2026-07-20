@@ -1,10 +1,12 @@
-<!doctype html>
+<!doctype html lang="en">
 <html>
 	<style>
-		.figure-pair { margin: 2em auto; text-align: center; }
-		.figure-pair .imgs { display: flex; gap: 12px; justify-content: center; align-items: center; }
-		.figure-pair img { height: 320px; width: auto; max-width: 49%; object-fit: contain; }
-		.figure-pair figcaption { margin-top: 8px; font-size: 0.9em; color: #555; }
+		.figure-pair { margin: 1em auto; text-align: center; }
+		.figure-pair .imgs { display: flex; gap: 10px; justify-content: center; align-items: center; }
+		.figure-pair img { height: 300px; width: auto; max-width: 49%; object-fit: contain; }
+		.figure-pair figcaption { margin-top: 6px; font-size: 0.9em; color: #555; }
+		.content { max-width: 42em; margin: 0 auto; }
+		.content p { text-align: justify; hyphens: auto; line-height: 1.6; }
 	  </style>
 	<head>
 		<meta charset="utf-8">
@@ -37,7 +39,7 @@
 		<p>While replicating full scaling law experiments up to the frontier is prohibitively expensive, you can demonstrate scaling laws at home, with some limitations, by simplifying the data regime and scaling down the experiments as done here. In particular, I am roughly following a suggested exercise from Google Deepmind pretraining lead Vlad Feinberg's <a href="https://vladfeinberg.com/2026/05/10/how-to-land-a-job-at-a-frontier-lab.html">blog post</a>:</p>
 		
 		<blockquote>
-		<p>&ldquo;Code a ~10M transformer using only jax, flax, optax in free colab using tpu. Hard code it to accept digits 0-9, space, +, =. Generate a dataset of simple up-to-3-digit numbers, have it learn addition. Should train quickly on T4 GPU (pad examples to fixed length). Derive Chinchilla laws for this; see how they differ for dense vs MoE architectures.&rdquo;</p>
+		<p><i>"Code a ~10M transformer using only jax, flax, optax in free colab using tpu. Hard code it to accept digits 0-9, space, +, =. Generate a dataset of simple up-to-3-digit numbers, have it learn addition. Should train quickly on T4 GPU (pad examples to fixed length). Derive Chinchilla laws for this; see how they differ for dense vs MoE architectures."</i></p>
 		</blockquote>
 	</body>
 </html>
