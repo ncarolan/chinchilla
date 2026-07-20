@@ -1,12 +1,12 @@
 <!doctype html lang="en">
 <html>
 	<style>
-		.figure-pair { margin: 1em auto; text-align: center; }
+		.figure-pair { margin: 1em auto; margin-top: -5px; text-align: center; }
 		.figure-pair .imgs { display: flex; gap: 10px; justify-content: center; align-items: center; }
-		.figure-pair img { height: 300px; width: auto; max-width: 49%; object-fit: contain; }
+		.figure-pair img { height: 300px; width: auto; object-fit: contain; }
 		.figure-pair figcaption { margin-top: 6px; font-size: 0.9em; color: #555; }
 		.content { max-width: 42em; margin: 0 auto; }
-		.content p { text-align: justify; hyphens: auto; line-height: 1.6; }
+		.p { text-align: justify; hyphens: auto; line-height: 1.6; }
 	  </style>
 	<head>
 		<meta charset="utf-8">
@@ -20,7 +20,7 @@
 	    <h1 style="margin-bottom: -10px;"><a href="https://ncarolan.github.io" class="plain-link">Nicholas Carolan</a></h1>
     	<hr>
 
-	    <h2 style="margin-bottom: -12px;">Minimal Scaling Laws</h2>
+	    <h2 style="margin-bottom: -15px;">Minimal Scaling Laws</h2>
 	    <p>[<a href="https://colab.research.google.com/github/ncarolan/chinchilla/blob/main/chinchilla.ipynb" target="_blank">Colab</a>] [<a href="https://github.com/ncarolan/chinchilla" target="_blank">GitHub</a>]</p>
 	    <p><i>TL;DR: I derive Chinchilla-style transformer scaling laws in a minimal setup using small models (<10M parameters) and synthetic addition data, all trained in a single (free!) NVIDIA T4 Google Colab notebook.</i></p>
 			  
@@ -39,7 +39,25 @@
 		<p>While replicating full scaling law experiments up to the frontier is prohibitively expensive, you can demonstrate scaling laws at home, with some limitations, by simplifying the data regime and scaling down the experiments as done here. In particular, I am roughly following a suggested exercise from Google Deepmind pretraining lead Vlad Feinberg's <a href="https://vladfeinberg.com/2026/05/10/how-to-land-a-job-at-a-frontier-lab.html">blog post</a>:</p>
 		
 		<blockquote>
-		<p><i>"Code a ~10M transformer using only jax, flax, optax in free colab using tpu. Hard code it to accept digits 0-9, space, +, =. Generate a dataset of simple up-to-3-digit numbers, have it learn addition. Should train quickly on T4 GPU (pad examples to fixed length). Derive Chinchilla laws for this; see how they differ for dense vs MoE architectures."</i></p>
+		<p><i>&ldquo;Code a &approx;10M transformer using only jax, flax, optax in free colab using tpu. Hard code it to accept digits 0-9, space, +, =. Generate a dataset of simple up-to-3-digit numbers, have it learn addition. Should train quickly on T4 GPU (pad examples to fixed length). Derive Chinchilla laws for this; see how they differ for dense vs MoE architectures.&rdquo;</i></p>
 		</blockquote>
-	</body>
+
+		<h3>Data</h3>
+
+		<p>In this minimal experiment, I train models on a simple synthetic dataset of integer addition examples, for example &ldquo;142+17=159&rdquo;. The loss is computed only on the answer tokens. While Vlad suggests generating examples of 3 digit addition, I found that this was extremely trivial for even tiny models to learn, and the task would quickly saturate. Instead, I sum randomly generated numbers of up to 6 digits for a slightly more challenging data distribution. Conveniently, arithmetic can be represented with only 10 tokens for digits plus a few operator and padding tokens. Because the vocabulary is so small, this greatly reduces embedding parameters and avoids the debate about whether embedding parameters count in scaling.</p>
+
+		<p>There is a key distinction between this synthetic addition task and the natural language modeling done in <a href="https://arxiv.org/abs/2001.08361">Kaplan et al 2020</a> and <a href="https://arxiv.org/pdf/2203.15556">Hoffmann et al 2022</a>. Addition is a perfectly solvable task, while natural language modeling is not. Given the prefix &ldquo;X+Y=&rdquo;, the solution Z is uniquely deterministic; however, given a string like &ldquo;Mom&rsquo;s Chili Recipe: &rdquo; there are many valid subsequent sequences. We will see if the difference in data distribution, among other differences, impacts the observed scaling laws in my experiments.</p>
+
+		<h3>Models</h3>
+
+		<p>I use GPT-style transformers of varying sizes for the scaling experiments. Specifically, they are pre-norm decoder-only dense transformers with GeLU activations. The smaller models have a single attention head per layer, while larger models have multiple 32-dimensional attention heads. The hidden dimension is always set at 4 times the model (bottleneck) dimension. Following Vlad&rsquo;s suggestion, the models are implemented in JAX, using the <a href="https://flax.readthedocs.io/en/stable/">Flax</a> API with <a href="https://optax.readthedocs.io/en/latest/">Optax</a> for the loss function and optimizer.</p>
+
+		<p>My experiments approximately follow the Chinchilla methodology. I use the AdamW optimizer with cosine decay that bottoms out the learning rate to 10% of its maximum by the final training step. This avoids the issue in the Kaplan experiments, which used the same fixed learning rate schedule for all models regardless of step count. Peak learning rate is set at 1e-3. The batch size is set to 512 examples, and each example is padded to a fixed token length.</p>
+
+		<h3>Scaling</h3>
+
+		<p>I scale the parameter count from ~1k to ~10M by simultaneously increasing the model depth from 1 up to 12 layers while increasing the model dimension from 16 up to 256. The other model attributes are largely held constant. The compute and data are scaled by training models over a ladder of increasingly long training runs, up to ~1e16 FLOPs. Because the learning rate decay depends on the final number of steps a model takes, each training run in the ladder is unique.</p>
+
+		<p>A 10 million parameter model takes up 10M &times; (4 bytes/param) = 40MB in weights, and about 160MB with gradients and optimizer states. This can comfortably fit on a free T4 GPU in Google Colab. While Vlad predicts that it &ldquo;should train quickly on T4 GPU&rdquo;, I find that fully exploring the scaling relationship involves training a lot of models for many steps over several hours.</p>
+</body>
 </html>
